@@ -64,7 +64,6 @@ public class Config {
 		config.addProperty("token", token);
 		JsonArray channelIDs = new JsonArray();
 		channelIDs.add(channelID);
-		channelIDs.add("There's now support for multiple discord text channels!");
 		config.add("channelIDs", channelIDs);
 
 		try {
