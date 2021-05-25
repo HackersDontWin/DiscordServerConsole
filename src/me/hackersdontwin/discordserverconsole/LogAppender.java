@@ -1,5 +1,6 @@
 package me.hackersdontwin.discordserverconsole;
 
+import com.google.gson.JsonElement;
 import net.dv8tion.jda.api.JDA;
 import org.apache.logging.log4j.core.LogEvent;
 import org.apache.logging.log4j.core.appender.AbstractAppender;
@@ -7,13 +8,13 @@ import org.bukkit.Bukkit;
 
 public class LogAppender extends AbstractAppender {
 
-    private FileManager fm;
+    private DiscordServerConsole plugin;
     private String messages = "";
     private JDA jda;
 
-    public LogAppender(FileManager f, JDA j) {
+    public LogAppender(DiscordServerConsole plugin, JDA j) {
 		super("MyLogAppender", null, null);
-    	this.fm = f;
+    	this.plugin = plugin;
     	this.jda = j;
         // do your calculations here before starting to capture
         start();
@@ -42,7 +43,9 @@ public class LogAppender extends AbstractAppender {
                             messages = messages.substring(0, (1999-messageTooLong.length())-6);
                             messages += messageTooLong;
                         }
-                        jda.getTextChannelById(fm.getConfig().getLong("Important.ChannelID")).sendMessage("```" + messages + "```").queue();
+						for(JsonElement element : plugin.config.getConfig().get("channelIDs").getAsJsonArray()) {
+							jda.getTextChannelById(element.getAsString()).sendMessage("```" + messages + "```").queue();
+						}
                     }
                 } catch (NullPointerException e) {
 

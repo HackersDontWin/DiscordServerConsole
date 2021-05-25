@@ -1,5 +1,7 @@
 package me.hackersdontwin.discordserverconsole;
 
+import com.google.gson.JsonElement;
+import com.google.gson.JsonPrimitive;
 import net.dv8tion.jda.api.JDA;
 import net.dv8tion.jda.api.events.ReadyEvent;
 import net.dv8tion.jda.api.events.message.MessageReceivedEvent;
@@ -9,11 +11,11 @@ import org.bukkit.scheduler.BukkitRunnable;
 
 public class DiscordEvents extends ListenerAdapter {
 
-    private FileManager fm;
+    private DiscordServerConsole plugin;
     private JDA jda;
 
-    public DiscordEvents(FileManager f, JDA j) {
-    	this.fm = f;
+    public DiscordEvents(DiscordServerConsole plugin, JDA j) {
+    	this.plugin = plugin;
     	this.jda = j;
 	}
 
@@ -23,27 +25,28 @@ public class DiscordEvents extends ListenerAdapter {
             return;
         }
 
-        if(fm.getConfig().getLong("Important.ChannelID") == e.getChannel().getIdLong()) {
-
+        if(plugin.config.getConfig().get("channelIDs").getAsJsonArray().contains(new JsonPrimitive(e.getChannel().getId()))) {
             new BukkitRunnable() {
                 @Override
                 public void run() {
                     Bukkit.getServer().dispatchCommand(Bukkit.getConsoleSender(), e.getMessage().getContentRaw());
                 }
             }.runTask(DiscordServerConsole.getPlugin());
-
         }
     }
 
     @Override
     public void onReady(ReadyEvent e) {
-        try {
-            jda.getTextChannelById(fm.getChannelID()).sendMessage("```ini\n[Successfully connected the Minecraft server to the Discord text channel!]```").queue();
-        } catch (Exception ex) {
-            ex.printStackTrace();
-            Bukkit.getLogger().severe("Invalid channel ID! Make sure to put a channel ID in the config file! Without this the plugin won't work! Shutting down the server...");
-            System.exit(0);
-        }
+		for(JsonElement element : plugin.config.getConfig().get("channelIDs").getAsJsonArray()) {
+			try {
+				jda.getTextChannelById(element.getAsString()).sendMessage("```ini\n[Successfully connected the Minecraft server to the Discord text channel!]```").queue();
+			} catch (Exception ex) {
+				ex.printStackTrace();
+				Bukkit.getLogger().severe("Invalid channel ID '" + element.getAsString() + "'! Make sure to put a valid channel ID in the config file! Without this the plugin won't work! If you're sure you've done this correctly, please contact plugin support on the Discord server: https://discord.gg/d3ac2tJ . Shutting down the server...");
+				System.exit(0);
+			}
+		}
+
 
     }
 
