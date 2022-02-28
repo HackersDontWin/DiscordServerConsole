@@ -2,6 +2,7 @@ package me.hackersdontwin.discordserverconsole;
 
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
+import com.google.gson.JsonPrimitive;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.configuration.file.YamlConfiguration;
 
@@ -53,8 +54,8 @@ public class Config {
 		config = new JsonObject();
 		config.addProperty("token", "Token goes in here");
 		JsonArray channelIDs = new JsonArray();
-		channelIDs.add("Add the discord channel ID here!");
-		channelIDs.add("You can also add multiple channels!");
+		channelIDs.add(new JsonPrimitive("Add the discord channel ID here!"));
+		channelIDs.add(new JsonPrimitive("You can also add multiple channels!"));
 		config.add("channelIDs", channelIDs);
 		save();
 	}
@@ -63,7 +64,7 @@ public class Config {
 		config = new JsonObject();
 		config.addProperty("token", token);
 		JsonArray channelIDs = new JsonArray();
-		channelIDs.add(channelID);
+		channelIDs.add(new JsonPrimitive(channelID));
 		config.add("channelIDs", channelIDs);
 
 		try {

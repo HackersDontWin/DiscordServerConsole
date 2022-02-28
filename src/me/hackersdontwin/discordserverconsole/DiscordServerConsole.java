@@ -82,7 +82,9 @@ public class DiscordServerConsole extends JavaPlugin {
 
     public void onDisable() {
         plugin = null;
+        final org.apache.logging.log4j.core.Logger logger = (org.apache.logging.log4j.core.Logger) LogManager.getRootLogger();
         appender.stop();
+        logger.removeAppender(appender);
     }
 
     public static Plugin getPlugin() {
