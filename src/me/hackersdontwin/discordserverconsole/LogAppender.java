@@ -5,15 +5,16 @@ import net.dv8tion.jda.api.JDA;
 import org.apache.logging.log4j.core.LogEvent;
 import org.apache.logging.log4j.core.appender.AbstractAppender;
 import org.bukkit.Bukkit;
+import org.bukkit.scheduler.BukkitRunnable;
 
 public class LogAppender extends AbstractAppender {
 
-    private DiscordServerConsole plugin;
+    private final DiscordServerConsole plugin;
     private String messages = "";
-    private JDA jda;
+    private final JDA jda;
 
     public LogAppender(DiscordServerConsole plugin, JDA j) {
-		super("MyLogAppender", null, null);
+		super("MyLogAppender" + System.currentTimeMillis(), null, null);
     	this.plugin = plugin;
     	this.jda = j;
         // do your calculations here before starting to capture
@@ -32,7 +33,8 @@ public class LogAppender extends AbstractAppender {
 
 
     public void sendMessages() {
-        Bukkit.getScheduler().scheduleSyncRepeatingTask(DiscordServerConsole.getPlugin(), new Runnable() {
+
+        new BukkitRunnable() {
             @Override
             public void run() {
                 try {
@@ -43,16 +45,22 @@ public class LogAppender extends AbstractAppender {
                             messages = messages.substring(0, (1999-messageTooLong.length())-6);
                             messages += messageTooLong;
                         }
-						for(JsonElement element : plugin.config.getConfig().get("channelIDs").getAsJsonArray()) {
-							jda.getTextChannelById(element.getAsString()).sendMessage("```" + messages + "```").queue();
-						}
+                        for(JsonElement element : plugin.getBotConfig().getConfig().get("channelIDs").getAsJsonArray()) {
+                            try {
+                                jda.getTextChannelById(element.getAsString()).sendMessage("```" + messages + "```").queue();
+                            } catch (NumberFormatException numberFormatException) {
+                                Bukkit.getLogger().severe("[DiscordServerConsole] Invalid channel ID '" + element.getAsString() + "'! Make sure to put a valid channel ID in the config file! Without this the plugin won't work properly! If you're sure you've done this correctly, please contact plugin support on the Discord server: https://discord.gg/d3ac2tJ . Disabling plugin...");
+                                cancel();
+                                break;
+                            }
+                        }
                     }
                 } catch (NullPointerException e) {
 
                 }
                 messages = "";
             }
-        }, 0L, 20L);
+        }.runTaskTimer(plugin, 0L, 20L);
     }
 
 }
