@@ -1,7 +1,6 @@
 package me.hackersdontwin.discordserverconsole;
 
 import com.google.gson.JsonElement;
-import com.google.gson.JsonPrimitive;
 import net.dv8tion.jda.api.JDA;
 import net.dv8tion.jda.api.events.message.MessageReceivedEvent;
 import net.dv8tion.jda.api.events.session.ReadyEvent;
@@ -11,8 +10,8 @@ import org.bukkit.scheduler.BukkitRunnable;
 
 public class DiscordEvents extends ListenerAdapter {
 
-    private DiscordServerConsole plugin;
-    private JDA jda;
+    private final DiscordServerConsole plugin;
+    private final JDA jda;
 
     public DiscordEvents(DiscordServerConsole plugin, JDA j) {
         this.plugin = plugin;
@@ -22,6 +21,10 @@ public class DiscordEvents extends ListenerAdapter {
     @Override
     public void onMessageReceived(MessageReceivedEvent e) {
         if (e.getAuthor() == e.getJDA().getSelfUser()) {
+            return;
+        }
+
+        if(plugin.getBotConfig().getExcludedUserIDs().contains(e.getAuthor().getIdLong())) {
             return;
         }
 

@@ -34,6 +34,7 @@ public class Config {
 
 			if(file.exists()) {
 				this.config = plugin.getGson().fromJson(new FileReader(this.file), JsonObject.class);
+				addNewConfigSections();
 			} else {
 				setupConfig();
 			}
@@ -49,7 +50,19 @@ public class Config {
 		channelIDs.add(new JsonPrimitive("Add the discord channel ID here!"));
 		channelIDs.add(new JsonPrimitive("You can also add multiple channels!"));
 		config.add("channelIDs", channelIDs);
+		JsonArray excludedUserIDs = new JsonArray();
+		excludedUserIDs.add("Add any user ID here to exclude their messages from being read!");
+		config.add("excludedUserIDs", excludedUserIDs);
 		save();
+	}
+
+	private void addNewConfigSections() {
+		if(!config.has("excludedUserIDs")) {
+			JsonArray excludedUserIDs = new JsonArray();
+			excludedUserIDs.add("Add any user ID here to exclude their messages from being read!");
+			config.add("excludedUserIDs", excludedUserIDs);
+			save();
+		}
 	}
 
 	public boolean save() {
@@ -79,6 +92,18 @@ public class Config {
 				ids.add(Long.parseLong(elm.getAsString()));
 			} catch (NumberFormatException e) {
 				Bukkit.getLogger().severe("[DiscordServerConsole] The channel ID '" + elm.getAsString() + "' is invalid!");
+			}
+		}
+		return ids;
+	}
+
+	public List<Long> getExcludedUserIDs() {
+		List<Long> ids = new ArrayList<>();
+		for(JsonElement elm : config.getAsJsonArray("excludedUserIDs")) {
+			try {
+				ids.add(Long.parseLong(elm.getAsString()));
+			} catch (NumberFormatException e) {
+				Bukkit.getLogger().warning("[DiscordServerConsole] The user ID '" + elm.getAsString() + "' is invalid!");
 			}
 		}
 		return ids;
